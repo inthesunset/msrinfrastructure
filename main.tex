@@ -1,0 +1,149 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{Infrastructure for Mining and Analyzing the Entirety of FLOSS 
+Git Repositories
+}
+
+\author{\IEEEauthorblockN{1\textsuperscript{st} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address}
+\and
+\IEEEauthorblockN{2\textsuperscript{nd} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address}
+}
+
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+
+\begin{IEEEkeywords}
+software mining
+\end{IEEEkeywords}
+
+
+%Where should we mention the challenges, like FLOSS are scattered, multiple VCSs, large-scale data?
+%Where should we put the next version of data retrival, i.e. only retrieve new commits?
+%Where should we put Marat's python interface work for the infrastructure?
+\section{Introduction}
+
+There are unique research questions that require the entirety of FLOSS data to be answered: census, technical dependencies, code flow, social networks, large database of "natural experiments"  (see state of Avaya report: policies, Software Heritage: preservation, )
+
+The traditional approaches of obtaining repository of a project or a small ecosystem do not scale and are unreachable for individual researchers or groups. The current approaches either do not collect git data (ghTorrent) or do not provide for an analytic engine on top of it). 
+
+Our objective is to realize a prototype of an infrastructure that can handle the amount of data in the entire FLOSS ecosystem and provide basic capabilities to analyze the data at that scale.  
+
+We approach this task as a software analysis pipeline starting from discovery and retrieval of data, storage and updates, and transformations and data augmentation necessary for analytic tasks downstream. We focus primarily on using the simplest possible techniques and components to provide a conceptual implementation and to be able to evaluate the performance of the components and ensure they run on a wide variety of infrastructure.
+
+We start from the overview of related work in Section~\ref{s:related}, describe the architecture of the prototype implementation in Section~\ref{s:architecture}, provide details of the components of the pipeline in Sections~\ref{s:discovery,s:retrieval,s:storage,s:update,s:transformations}. We conclude with a description of the experiences describing the attempts to enhance the prototype and to conduct several software analytics tasks in Section~\ref{s:applications}.
+
+\section{Related Work}\label{s:related}
+
+The large-scale software mining efforts can be roughly subdivided into 
+attempts at preservation, data sharing for research purposes, and efforts to build of decision support tools.
+%for replication
+Examples of preservation 
+involve binary/executable software (old game move to web end and so forth), ad the source code, e.g., 
+ Software Heritage. 
+
+Software is an essential pillar of scientific research across disciplines and its preservation has been drawing attention in recent years. A number of these initiatives are concerned with software execution in binary form. For example, the Internet Archive~\cite{lueck2014internet} allows visitors to play old legacy games from their software collections through web interface. More importantly, software source code, the only representation of software that contains human readable knowledge, needs to be preserved to avoid permanent loss of knowledge. In particular, a couple of programs were focused on the preservation of open source software: Researchers in Software Heritage~\cite{di2017software} developed a distributed system in collecting and storing large amount of open source development data from various open source platforms and package hosts; 
+
+The main drawback of these efforts is the lack of focus on applications to software analytics. For example, the way the data is stored in SoftwareHeritage would make it very difficult to do analytics, such as 
+creation of dependencies among artifacts and authors. 
+
+%which category should GHTorrent go?
+GHTorrent serves as an offline mirror for GitHub, did not go to the depth of git objects (shallow in store/use): check if authors have 
+ created more recent databases. -> only mongo and mysql. Did not go to git objects, only commits.
+
+%Support policies and build software quality and development support 
+Many giant companies have devoted tremendous amount of efforts in developing software analysis platforms over the entire enterprise, aiming at improving the quality of software built and guiding enterprise towards its business goals through providing recommendations to software development organizations/teams, monitoring software development trend and gaining insights into research interests. For example, Avaya, a telecommunication company, built a platform~\cite{HMPQ10}, which collects software development related data from most of its software development teams and third parties, and enabled systematic measurements and assessments of the state of software. Another example is CodeMine~\cite{czerwonka2013codemine}, a software platform developed by Microsoft that gathered a variety of source code related artifacts for each software repository inside company. It provides data source support to developers when making decisions related to their products and inspirations for new lines of research.
+%This platform allows not only an overarching understanding of software development, but also 
+
+tools : State of Software Report in Avaya (emse), CodeMine (czerwonka)
+There is a very significant amount of stuff related to BO that needs to be included 
+http://boa.cs.iastate.edu/ (also~\cite{TaRe}
+however the approach is focused on language analysis and a programming language to conduct analytic (need to be precise here). The collection 
+procedure, such as discovery, retrieval, storage, update, and completeness issues (for example, only certain languages are supported) are not the primary focus of this effort. 
+
+The system described in this paper is an elaboration of the earlier attempt described more than a decade earlier~\cite{M09msr,M07}.
+
+The process of mining individual git repositories is complex 
+cite "pitfalls of mining git" paper, but it becomes even more 
+complex on a large scale when dealing with Big Data~\cite{gorton2016software}. More specifically, using operational data requires resolution to three major problems~\cite{M14}: the lack of 
+context, missing attributes or observations, and incorrect data. This makes critical tasks such as debugging and testing very complex and time consuming. We use both deep and broad prototyping (cite the relevant paper) to do the implementation. The particular approach should, therefore, be capable of making changes to the pipeline without the need to recreate the entire database. This suggest the layered data approach where initial layers approximate raw data and later layers include cleaned/augmented data. 
+
+To demonstrate the utility of the system we make attempts to conduct research on this very large collection of version control data. 
+Enhancements
+PY interface, debugging
+List applications
+Shonan book on measuring supply chain
+Identity matching
+PyPi analysis (Marat)
+Ecosystem analysis (Chris)
+Technology spread
+Earlier applications~\cite{MNHAM13}
+
+
+
+\section{Infrastructure Architecture}
+Overall data flow chart
+\subsection{Projects Discovery/Retrieval}
+\begin{itemize}
+    \item Projects hosted on Open source forges, language package managers such as NPM ..., Ecosystems e.g. Debian packages
+    \item Approaches to discover/retrieve (API -- multi-id to avoid limitation; Search Engine, google bing yahoo; keyword search)
+    \item Implementation -- ACF clusters for retrieving
+\end{itemize}
+
+\subsection{Data Extraction}
+\begin{itemize}
+    \item data model -- git objects, hash based, (hash collision probability?)
+    \item data cleaning -- consecutive commits difference, (real filename extraction?), 
+    \item data perseverance -- multiple copies, distributed
+    \item Implementation -- Bacon clusters
+\end{itemize}
+
+\subsection{Data Re-organization -- Map}
+\begin{itemize}
+    \item Purpose -- facilitate research, speed up query
+    \item Structure and Reasons
+    \item ...
+\end{itemize}
+
+\section{Usages}
+\subsection{extraction of dependency for a project, language based}
+\subsection{trend of language/ecosystem -- JS, Pypi, C ...}
+\subsection{Identity matching (Maybe)}
+\subsection{Pypi/python related work done by Marat}
+
+\section{Envisions}
+\subsection{exposure -- build API/web interface}
+\subsection{Updates -- dynamic period for old projects}
+\subsection{periodically report of state-of-art in growth of ecosystems, etc.}
+
+\section{Validation}
+\begin{itemize}
+    \item Should we find a way to valid our datasets with known sites such as software heritage and GHTorrent?
+\end{itemize}
+
+\section{Limitation}
+
+\section*{Acknowledgment}
+\section*{References}
+\end{document}
